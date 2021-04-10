@@ -80,7 +80,33 @@ class KMeans(Model):
             self.centroids[i] = data[random_centroids[i]]
 
     def _kmeans_plus_plus_init(self, data):
-        pass
+        np.random.seed(self.random_seed)
+        # the first centroid is chosen at random
+        centroids = [data[np.random.choice(len(data))]]
+
+        for i in range(self.k - 1):
+            dx_array = []
+            for data_point in data:
+                centroid_distances = []
+                # compute the distance from the data point to each centroid
+                for centroid in centroids:
+                    centroid_distance = distance.euclidean(data_point, centroid)
+                    centroid_distances.append(centroid_distance)
+
+                # dx denotes the square of the shortest distance from the data point to a centroid
+                dx = np.min(centroid_distances) ** 2
+                dx_array.append(dx)
+
+            # compute the probabilities
+            square_sum = np.sum(dx_array)
+            probabilities = np.divide(dx_array, square_sum)
+            # the point with the highest probability is the new centroid
+            highest_probability = np.max(probabilities)
+            new_centroid = data[np.where(probabilities == highest_probability)][0]
+            centroids.append(new_centroid)
+
+        for i in range(self.k):
+            self.centroids[i] = centroids[i]
 
     def _centroid_distance(self, data_point):
         # compute the euclidean distance from the data point to each centroid
