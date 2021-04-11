@@ -36,7 +36,9 @@ class KMeans(Model):
 
             # the position of each centroid is moved to the mean of the points in the cluster
             for label, cluster in self.clusters.items():
-                self.centroids[label] = np.mean(cluster, axis=0)
+                # compute the mean only if the cluster is not empty
+                if cluster:
+                    self.centroids[label] = np.mean(cluster, axis=0)
 
             # save current centroids and clusters to history
             self.history[i] = {'centroids': dict(self.centroids), 'clusters': dict(self.clusters)}
@@ -74,7 +76,7 @@ class KMeans(Model):
     def _forgy_init(self, data):
         # chooses k random points from the data as initial centroids
         np.random.seed(self.random_seed)
-        random_centroids = np.random.choice(len(data), self.k)
+        random_centroids = np.random.choice(len(data), self.k, replace=False)
 
         for i in range(self.k):
             self.centroids[i] = data[random_centroids[i]]
