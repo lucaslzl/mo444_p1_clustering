@@ -9,7 +9,7 @@ class Main:
 
     for model in [DBScan(), KMeans()]:
 
-        model.fit(dataset)
+        c = model.fit(dataset)
+        model.predict(dataset, c, test)
 
         pass
-

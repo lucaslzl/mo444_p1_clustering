@@ -1,3 +1,4 @@
+import numpy as np
 from scipy.spatial import distance
 
 from model import Model
@@ -6,7 +7,7 @@ from model import Model
 class DBScan(Model):
 
 
-    def __init__(self, distance=0.5, min_neighbors=3):
+    def __init__(self, distance=1.0, min_neighbors=2):
 
         self.distance = distance
         self.min_neighbors = min_neighbors
@@ -17,9 +18,9 @@ class DBScan(Model):
         calc_dist = distance.euclidean(point_a, point_b)
 
         if calc_dist < self.distance:
-            return True
+            return True, self.distance
 
-        return False
+        return False, self.distance
 
 
     def _get_neighbors(self, x, i):
@@ -31,10 +32,32 @@ class DBScan(Model):
             if i == j:
                 continue
 
-            if _verify_neighbor(x[i], x[j]):
+            verif, _ = self._verify_neighbor(x[i], x[j])
+
+            if verif:
                 neighbors.append(j)
 
         return neighbors
+
+
+    def _get_neighbors_predict(self, x, i, y):
+
+        neighbors = []
+
+        for j in range(len(x)):
+
+            verif, dist = self._verify_neighbor(y[i], x[j])
+
+            if verif:
+                neighbors.append((j, dist))
+
+        return neighbors
+
+    
+    def _get_by_closest(self, neighbors):
+
+        neighbors = np.array(neighbors)
+        return neighbors[neighbors[:, 1].argsort()]
 
 
     def fit(self, x):
@@ -65,7 +88,7 @@ class DBScan(Model):
                 if clusters[j] == 0:
                     clusters[j] = cluster_id
 
-                if clusters[j] != -1
+                if clusters[j] != -1:
                     continue
 
                 post_neighbors = self._get_neighbors(x, j)
@@ -77,10 +100,44 @@ class DBScan(Model):
 
             cluster_id += 1
 
+        return clusters
 
-    def predict(self, y):
-        pass
 
+    def predict(self, x, clusters, y):
+
+        clusters_pred = [-1] * len(y)
+
+        new_cluster_id = max(clusters) + 1
+
+        for i in range(len(y)):
+
+            neighbors = self._get_neighbors_predict(x, i, y)
+
+            if len(neighbors) > 0:
+
+                neighbors = self._get_by_closest(neighbors)
+
+                for j in range(len(neighbors)):
+
+                    print(f'J: {neighbors[j]}')
+
+                    if clusters[j] > 0:
+                        clusters_pred[i] = clusters[j]
+                        break
+
+            if clusters_pred[i] == -1:
+                clusters_pred[i] = new_cluster_id
+                new_cluster_id += 1
+
+        return clusters_pred
+
+
+x = [[0, 0], [0, 1], [1, 0], [1, 1]]
+y = [[0.5, 0.5], [0.7, 0.7]]
 
 db = DBScan()
-db.fit([[0, 0], [0, 1], [1, 0], [1, 1]])
+cl = db.fit(x)
+clp = db.predict(x, cl, y)
+
+print(cl)
+print(clp)
