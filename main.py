@@ -2,6 +2,18 @@ from inout import read_datasets, scale_datasets, split_data
 from dbscan import DBScan
 from kmeans import KMeans
 
+#### Tasks
+## Clustering
+# - Select another Dataset
+# - Train with new dataset
+# - Evaluate different parameters
+# - Use metrics to evaluate
+
+## PCA
+# - Implement PCA
+# - Run kmeans with distinct clusters
+# - Compare results
+
 
 class Main:
 

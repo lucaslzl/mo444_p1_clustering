@@ -67,7 +67,7 @@ class DBScan(Model):
         #  0 - no cluster
         #  1 - border point
         # 2+ - clusters
-        clusters = [0] * len(x)
+        clusters = np.array([0] * len(x))
 
         cluster_id = 2
 
@@ -78,39 +78,19 @@ class DBScan(Model):
 
             neighbors = self._get_neighbors(x, i)
 
+            if len(neighbors) == 0:
+                clusters[i] = -1
+                continue
+
             if len(neighbors) > 0 and len(neighbors) < self.min_neighbors:
                 clusters[i] = 1
                 continue
 
-            clusters[i] = cluster_id
-
-            indx = 0
-            while True:
-
-                if indx == len(neighbors):
-                    break
-
-                j = neighbors[indx]
-
-                if clusters[j] == 1:
-                    clusters[j] = cluster_id
-
-                if clusters[j] != 0:
-                    indx += 1
-                    continue
-
-                post_neighbors = self._get_neighbors(x, j)
-
-                if len(post_neighbors) >= self.min_neighbors:
-
-                    clusters[j] = cluster_id
-
-                    neighbors.extend(post_neighbors)
-                    neighbors = list(set(neighbors))
-
-                indx += 1
-
-            cluster_id += 1
+            if max(clusters[neighbors]) > 1:
+                clusters[i] = max(clusters[neighbors])
+            else:
+                clusters[i] = cluster_id
+                cluster_id += 1
 
         return clusters
 
@@ -133,7 +113,7 @@ class DBScan(Model):
 
                     indx_j = int(neighbors[j][0])
 
-                    if clusters[indx_j] > 0:
+                    if clusters[indx_j] > 1:
                         clusters_pred[i] = clusters[indx_j]
                         break
 
