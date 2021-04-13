@@ -1,15 +1,21 @@
-from io import read_csv
+from inout import read_datasets, scale_datasets, split_data
 from dbscan import DBScan
 from kmeans import KMeans
 
 
 class Main:
 
-    dataset = read_csv()
+    datasets = read_datasets()
 
-    for model in [DBScan(), KMeans()]:
+    datasets = scale_datasets(datasets)
+    datasets = split_data(datasets)
+    
+    for model in [DBScan()]:
 
-        c = model.fit(dataset)
-        model.predict(dataset, c, test)
+        for dataset in datasets:
 
-        pass
+            clusters = model.fit(dataset['train'].to_numpy())
+            pred = model.predict(dataset['train'].to_numpy(), clusters, dataset['test'].to_numpy())
+
+            print(clusters)
+            print(pred)

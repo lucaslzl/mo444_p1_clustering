@@ -7,7 +7,7 @@ from model import Model
 class DBScan(Model):
 
 
-    def __init__(self, distance=1.0, min_neighbors=2):
+    def __init__(self, distance=0.5, min_neighbors=3):
 
         self.distance = distance
         self.min_neighbors = min_neighbors
@@ -72,16 +72,22 @@ class DBScan(Model):
 
         for i in range(len(x)):
 
-            if clusters[i] == -1:
+            if clusters[i] != -1:
                 continue
 
             neighbors = self._get_neighbors(x, i)
 
-            if len(neighbors) > 0 and len(neighbors) < self.min_neighbors:
+            if len(neighbors) < self.min_neighbors:
                 clusters[i] = 0
+                continue
+
+            clusters[i] = cluster_id
 
             indx = 0
-            while (indx > len(neighbors)):
+            while True:
+
+                if indx == len(neighbors):
+                    break
 
                 j = neighbors[indx]
 
@@ -89,12 +95,17 @@ class DBScan(Model):
                     clusters[j] = cluster_id
 
                 if clusters[j] != -1:
+                    indx += 1
                     continue
 
                 post_neighbors = self._get_neighbors(x, j)
 
-                if len(neighbors) > 0 and len(post_neighbors) > self.min_neighbors:
+                if len(post_neighbors) >= self.min_neighbors:
+
+                    clusters[j] = cluster_id
+
                     neighbors.extend(post_neighbors)
+                    neighbors = list(set(neighbors))
 
                 indx += 1
 
@@ -119,10 +130,10 @@ class DBScan(Model):
 
                 for j in range(len(neighbors)):
 
-                    print(f'J: {neighbors[j]}')
+                    indx_j = int(neighbors[j][0])
 
-                    if clusters[j] > 0:
-                        clusters_pred[i] = clusters[j]
+                    if clusters[indx_j] > 0:
+                        clusters_pred[i] = clusters[indx_j]
                         break
 
             if clusters_pred[i] == -1:
@@ -132,12 +143,13 @@ class DBScan(Model):
         return clusters_pred
 
 
-x = [[0, 0], [0, 1], [1, 0], [1, 1]]
-y = [[0.5, 0.5], [0.7, 0.7]]
+# x = [[0, 0], [0, 1], [1, 0], [1, 1]]
+# y = [[0.5, 0.5], [0.7, 0.7]]
 
-db = DBScan()
-cl = db.fit(x)
-clp = db.predict(x, cl, y)
+# db = DBScan()
+# cl = db.fit(x)
+# clp = db.predict(x, cl, y)
 
-print(cl)
-print(clp)
+# print('\n Result')
+# print(cl)
+# print(clp)
