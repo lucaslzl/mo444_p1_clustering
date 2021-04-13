@@ -7,7 +7,7 @@ from model import Model
 class DBScan(Model):
 
 
-    def __init__(self, distance=0.5, min_neighbors=3):
+    def __init__(self, distance=0.3, min_neighbors=3):
 
         self.distance = distance
         self.min_neighbors = min_neighbors
@@ -63,22 +63,23 @@ class DBScan(Model):
     def fit(self, x):
 
         # Description
-        # -1 - no cluster
-        # 0 - edge point
-        # 1-n clusters
-        clusters = [-1] * len(x)
+        # -1 - outlier
+        #  0 - no cluster
+        #  1 - border point
+        # 2+ - clusters
+        clusters = [0] * len(x)
 
-        cluster_id = 1
+        cluster_id = 2
 
         for i in range(len(x)):
 
-            if clusters[i] != -1:
+            if clusters[i] != 0:
                 continue
 
             neighbors = self._get_neighbors(x, i)
 
-            if len(neighbors) < self.min_neighbors:
-                clusters[i] = 0
+            if len(neighbors) > 0 and len(neighbors) < self.min_neighbors:
+                clusters[i] = 1
                 continue
 
             clusters[i] = cluster_id
@@ -91,10 +92,10 @@ class DBScan(Model):
 
                 j = neighbors[indx]
 
-                if clusters[j] == 0:
+                if clusters[j] == 1:
                     clusters[j] = cluster_id
 
-                if clusters[j] != -1:
+                if clusters[j] != 0:
                     indx += 1
                     continue
 
@@ -116,7 +117,7 @@ class DBScan(Model):
 
     def predict(self, x, clusters, y):
 
-        clusters_pred = [-1] * len(y)
+        clusters_pred = [0] * len(y)
 
         new_cluster_id = max(clusters) + 1
 
@@ -135,10 +136,6 @@ class DBScan(Model):
                     if clusters[indx_j] > 0:
                         clusters_pred[i] = clusters[indx_j]
                         break
-
-            if clusters_pred[i] == -1:
-                clusters_pred[i] = new_cluster_id
-                new_cluster_id += 1
 
         return clusters_pred
 

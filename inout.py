@@ -6,9 +6,9 @@ from sklearn.model_selection import train_test_split
 ###              READ DATA                   ###
 ################################################
 
-def read_csv(file_name):
+def read_csv(file_name, sep=' '):
 
-    return pd.read_csv(file_name, sep=' ')
+    return pd.read_csv(file_name, sep=sep)
 
 
 def read_datasets(datasets=['cluster.dat']):
