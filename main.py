@@ -26,8 +26,9 @@ class Main:
 
         for dataset in datasets:
 
-            clusters = model.fit(dataset['train'].to_numpy())
-            pred = model.predict(dataset['train'].to_numpy(), clusters, dataset['test'].to_numpy())
+            res = model.fit(dataset['train'].to_numpy())
+            pred = model.predict(dataset['train'].to_numpy(), res, dataset['test'].to_numpy())
 
-            print(clusters)
+            # print(res)
             print(pred)
+            print(model.get_description_dist())

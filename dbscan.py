@@ -1,5 +1,7 @@
 import numpy as np
+from scipy import stats
 from scipy.spatial import distance
+from tqdm import tqdm
 
 from model import Model
 
@@ -7,17 +9,20 @@ from model import Model
 class DBScan(Model):
 
 
-    def __init__(self, distance=0.3, min_neighbors=3):
+    def __init__(self, distance=0.2, min_neighbors=5):
 
         self.distance = distance
         self.min_neighbors = min_neighbors
+        self.summed_dist = []
 
 
     def _verify_neighbor(self, point_a, point_b):
 
         calc_dist = distance.euclidean(point_a, point_b)
 
-        if calc_dist < self.distance:
+        self.summed_dist.append(calc_dist)
+
+        if calc_dist <= self.distance:
             return True, self.distance
 
         return False, self.distance
@@ -63,45 +68,89 @@ class DBScan(Model):
     def fit(self, x):
 
         # Description
-        # -1 - outlier
-        #  0 - no cluster
-        #  1 - border point
-        # 2+ - clusters
-        clusters = np.array([0] * len(x))
+        # [nc, ci]
+        # (nc) node classification
+        # -- 0  : none
+        # -- -1 : noise
+        # -- 1  : border
+        # -- 2  : core
+        # (ci) cluster id
 
-        cluster_id = 2
+        nc = [0] * len(x)
+        ci = [0] * len(x)
 
-        for i in range(len(x)):
+        cluster_id = 1
 
-            if clusters[i] != 0:
+        for i in tqdm(range(len(x))):
+
+            if nc[i] != 0:
                 continue
 
             neighbors = self._get_neighbors(x, i)
 
-            if len(neighbors) == 0:
-                clusters[i] = -1
+            if len(neighbors) < self.min_neighbors:
+                nc[i] = -1
                 continue
 
-            if len(neighbors) > 0 and len(neighbors) < self.min_neighbors:
-                clusters[i] = 1
-                continue
+            nc[i] = 2
+            ci[i] = cluster_id
 
-            if max(clusters[neighbors]) > 1:
-                clusters[i] = max(clusters[neighbors])
-            else:
-                clusters[i] = cluster_id
-                cluster_id += 1
+            indx = 0
+            while True:
 
-        return clusters
+                if indx == len(neighbors):
+                    break
+
+                j = neighbors[indx]
+
+                if nc[j] == -1:
+                    nc[j] = 1
+                    ci[j] = cluster_id
+
+                if nc[j] != 0:
+                    indx += 1
+                    continue
+
+                post_neighbors = self._get_neighbors(x, j)
+
+                if len(post_neighbors) >= self.min_neighbors:
+
+                    nc[j] = 2
+                    ci[j] = cluster_id
+
+                    neighbors.extend(post_neighbors)
+                    neighbors = list(set(neighbors))
+                
+                else:
+
+                    nc[j] = 1
+                    ci[j] = cluster_id
+
+                indx += 1
+
+            cluster_id += 1
+
+        return (nc, ci)
 
 
-    def predict(self, x, clusters, y):
+    def predict(self, x, res, y):
 
-        clusters_pred = [0] * len(y)
+        # Description
+        # [nc, ci]
+        # (nc) node classification
+        # -- 0  : none
+        # -- -1 : noise
+        # -- 1  : border
+        # -- 2  : core
+        # (ci) cluster id
 
-        new_cluster_id = max(clusters) + 1
+        (nc, ci) = res
 
-        for i in range(len(y)):
+        ci_pred = [0] * len(y)
+
+        new_cluster_id = max(ci) + 1
+
+        for i in tqdm(range(len(y))):
 
             neighbors = self._get_neighbors_predict(x, i, y)
 
@@ -113,11 +162,15 @@ class DBScan(Model):
 
                     indx_j = int(neighbors[j][0])
 
-                    if clusters[indx_j] > 1:
-                        clusters_pred[i] = clusters[indx_j]
+                    if nc[indx_j] == 2:
+                        ci_pred[i] = ci[indx_j]
                         break
 
-        return clusters_pred
+        return ci_pred
+
+    
+    def get_description_dist(self):
+        return f'Mean: {np.mean(self.summed_dist)}\nMedian: {np.median(self.summed_dist)}\nMode: {stats.mode(self.summed_dist)[0][0]}'
 
 
 # x = [[0, 0], [0, 1], [1, 0], [1, 1]]
@@ -125,7 +178,7 @@ class DBScan(Model):
 
 # db = DBScan()
 # cl = db.fit(x)
-# clp = db.predict(x, cl, y)
+#clp = db.predict(x, cl, y)
 
 # print('\n Result')
 # print(cl)
