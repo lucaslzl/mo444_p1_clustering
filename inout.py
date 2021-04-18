@@ -1,5 +1,7 @@
 import pandas as pd
 from sklearn.model_selection import train_test_split
+import matplotlib.pyplot as plt
+import seaborn as sns
 
 
 ################################################
@@ -11,7 +13,7 @@ def read_csv(file_name, sep=' '):
     return pd.read_csv(file_name, sep=sep)
 
 
-def read_datasets(datasets=['cluster.dat']):
+def read_datasets(datasets=['cluster.dat', 'credit.csv']):
 
     return [read_csv(f'datasets/{file}') for file in datasets]
 
@@ -60,5 +62,20 @@ def split_data(datasets):
 ###              PLOT DATA                   ###
 ################################################
 
-def plot():
-    pass
+def plot(data, res):
+    
+    (nc, ci) = res
+
+    data['Type'] = nc
+    data['Cluster'] = ci
+
+    cols = list(data.columns)
+
+    sns.set_theme()
+
+    sns.relplot(
+        data=data,
+        x=f"{cols[0]}", y=f"{cols[1]}", hue="Cluster", style="Type", 
+    )
+
+    plt.show()

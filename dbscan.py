@@ -9,7 +9,7 @@ from model import Model
 class DBScan(Model):
 
 
-    def __init__(self, distance=0.2, min_neighbors=5):
+    def __init__(self, distance=0.2, min_neighbors=3):
 
         self.distance = distance
         self.min_neighbors = min_neighbors
