@@ -4,12 +4,13 @@ from scipy.spatial import distance
 from tqdm import tqdm
 
 from model import Model
+from inout import *
 
 
 class DBScan(Model):
 
 
-    def __init__(self, distance=0.2, min_neighbors=3):
+    def __init__(self, distance=0.12, min_neighbors=2):
 
         self.distance = distance
         self.min_neighbors = min_neighbors
@@ -88,7 +89,7 @@ class DBScan(Model):
         nc = [0] * len(x)
         ci = [0] * len(x)
 
-        cluster_id = 1
+        cluster_id = 0
 
         # Iterate through all records
         for i in tqdm(range(len(x))):
@@ -105,6 +106,8 @@ class DBScan(Model):
                 nc[i] = -1
                 continue
 
+            cluster_id += 1
+
             # Core record
             nc[i] = 2
             ci[i] = cluster_id
@@ -119,36 +122,26 @@ class DBScan(Model):
                 
                 j = neighbors[indx]
 
-                # Verify if neighbor is classified as outlier
-                if nc[j] == -1:
-                    nc[j] = 1
-                    ci[j] = cluster_id
-
-                # Verify if neighbor was already classified
-                if nc[j] != 0:
+                if i == j:
                     indx += 1
                     continue
+
+                # At least it is a border point
+                nc[j] = 1
+                ci[j] = cluster_id
 
                 post_neighbors = self._get_neighbors(x, j)
 
                 # Verify if neighbor is core point
                 if len(post_neighbors) >= self.min_neighbors:
-
+                    # Classify as core point
                     nc[j] = 2
-                    ci[j] = cluster_id
-                
-                else:
-                    # Classify as border point
-                    nc[j] = 1
-                    ci[j] = cluster_id
 
-                # Continue exploring neighbourhood
-                neighbors.extend(post_neighbors)
-                neighbors = list(set(neighbors))
+                    # Continue exploring neighbourhood
+                    neighbors.extend(post_neighbors)
+                    neighbors = list(set(neighbors))
 
                 indx += 1
-
-            cluster_id += 1
 
         return (nc, ci)
 
