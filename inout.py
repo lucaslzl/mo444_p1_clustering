@@ -125,7 +125,7 @@ def plot_all(data, file_name):
     sns.relplot(
         data=data,
         x=f"{cols[0]}", y=f"{cols[1]}", hue="Cluster", style='Type', col='Experiment',
-        palette=palette, col_wrap=3
+        palette=palette
     )
 
     plt.savefig(f'./plots/{file_name}')
