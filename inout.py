@@ -112,6 +112,24 @@ def plot(data, res, file_name):
     plt.savefig(f'./plots/{file_name}')
 
 
+def plot_pred(data, pred, file_name):
+
+    data['Cluster'] = pred
+
+    cols = list(data.columns)
+
+    sns.set_theme()
+    palette = sns.color_palette("vlag", as_cmap=True)
+
+    sns.relplot(
+        data=data,
+        x=f"{cols[0]}", y=f"{cols[1]}", hue="Cluster",
+        palette=palette 
+    )
+
+    plt.savefig(f'./plots/{file_name}')
+
+
 def plot_all(data, file_name):
 
     data = data[data['Experiment'] != 'remove']
