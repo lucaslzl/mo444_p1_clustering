@@ -5,6 +5,7 @@ from pca import OurPCA
 
 
 class Main:
+    
     exp_execute = 2
 
     ############################################
@@ -35,7 +36,7 @@ class Main:
 
     ############################################
     # Experiment DBScan 2
-    # Execute model for Datset 1
+    # Execute model for Dataset 1
     ############################################
 
     if exp_execute == 2:
@@ -72,7 +73,7 @@ class Main:
 
     ############################################
     # Experiment DBScan 3
-    # Execute model for Datset 2
+    # Execute model for Dataset 2
     ############################################
 
     if exp_execute == 2:
