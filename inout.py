@@ -2,6 +2,7 @@ import pandas as pd
 from sklearn.model_selection import train_test_split
 import matplotlib.pyplot as plt
 import seaborn as sns
+import pickle
 
 
 ################################################
@@ -27,12 +28,21 @@ def read_datasets():
     return datasets
 
 
+def read_results(file_name):
+
+    with open (f'./results/{file_name}.p', 'rb') as fp:
+        results = pickle.load(fp)
+
+    return results
+
 ################################################
 ###              WRITE DATA                  ###
 ################################################
 
-def write_results():
-    pass
+def write_results(result, file_name):
+    
+    with open(f'./results/{file_name}.p', 'wb') as fp:
+        pickle.dump(result, fp)
 
 ################################################
 ###           TRANSFORM DATA                 ###
@@ -67,11 +77,22 @@ def split_data(datasets):
     return data
 
 
+def merge_result(data, res, dist_var):
+
+    (nc, ci) = res
+
+    data['Type'] = nc
+    data['Cluster'] = ci
+    data['Experiment'] = dist_var
+
+    return data
+
+
 ################################################
 ###              PLOT DATA                   ###
 ################################################
 
-def plot(data, res):
+def plot(data, res, file_name):
     
     (nc, ci) = res
 
@@ -81,10 +102,30 @@ def plot(data, res):
     cols = list(data.columns)
 
     sns.set_theme()
+    palette = sns.color_palette("vlag", as_cmap=True)
 
     sns.relplot(
         data=data,
-        x=f"{cols[0]}", y=f"{cols[1]}", hue="Cluster", style="Type", 
+        x=f"{cols[0]}", y=f"{cols[1]}", hue="Cluster", style='Type',
+        palette=palette 
     )
 
-    plt.show()
+    plt.savefig(f'./plots/{file_name}')
+
+
+def plot_all(data, file_name):
+
+    data = data[data['Experiment'] != 'remove']
+
+    cols = list(data.columns)
+
+    sns.set_theme()
+    palette = sns.color_palette("vlag", as_cmap=True)
+
+    sns.relplot(
+        data=data,
+        x=f"{cols[0]}", y=f"{cols[1]}", hue="Cluster", style='Type', col='Experiment',
+        palette=palette
+    )
+
+    plt.savefig(f'./plots/{file_name}')
