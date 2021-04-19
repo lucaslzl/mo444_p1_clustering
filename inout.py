@@ -13,9 +13,18 @@ def read_csv(file_name, sep=' '):
     return pd.read_csv(file_name, sep=sep)
 
 
-def read_datasets(datasets=['cluster.dat', 'credit.csv']):
+def read_datasets():
 
-    return [read_csv(f'datasets/{file}') for file in datasets]
+    datasets = []
+
+    for file, sep in zip(['cluster.dat', 'credit.csv'], [' ', None]):
+
+        dataset = read_csv(f'datasets/{file}', sep)
+        dataset = dataset.fillna(0)
+
+        datasets.append(dataset)
+
+    return datasets
 
 
 ################################################
