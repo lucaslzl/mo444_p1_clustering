@@ -39,29 +39,29 @@ class Main:
     datasets = scale_datasets(datasets)
     datasets = split_data(datasets)
     
-    for model in [DBScan()]:
+    model = DBScan()
 
-        for dataset in datasets:
+    for dataset in datasets:
 
-            res = model.fit(dataset['train'].to_numpy())
-            pred = model.predict(dataset['train'].to_numpy(), res, dataset['test'].to_numpy())
+        res = model.fit(dataset['train'].to_numpy())
+        pred = model.predict(dataset['train'].to_numpy(), res, dataset['test'].to_numpy())
 
-            plot(dataset['train'], res)
+        plot(dataset['train'], res)
 
 
-    datasets = read_datasets()
+    # datasets = read_datasets()
 
-    for n_components in [range(2, 3, 4)]:
+    # for n_components in [range(2, 3, 4)]:
 
-        for i, dataset in enumerate(datasets):
+    #     for i, dataset in enumerate(datasets):
 
-            dataset = OurPCA().fit_transform(dataset.to_numpy(), n_components)
+    #         dataset = OurPCA().fit_transform(dataset.to_numpy(), n_components)
 
-            dataset = scale_datasets([dataset])
-            dataset = split_data([dataset])
+    #         dataset = scale_datasets([dataset])
+    #         dataset = split_data([dataset])
             
-            model = KMeans()
-            res = model.fit(dataset['train'].to_numpy())
-            pred = model.predict(dataset['train'].to_numpy(), res, dataset['test'].to_numpy())
+    #         model = KMeans()
+    #         res = model.fit(dataset['train'].to_numpy())
+    #         pred = model.predict(dataset['train'].to_numpy(), res, dataset['test'].to_numpy())
 
-            plot(dataset['train'], res)
+    #         plot(dataset['train'], res)
