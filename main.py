@@ -3,114 +3,106 @@ from dbscan import DBScan
 from kmeans import KMeans
 from pca import OurPCA
 
-#### Tasks
-## Clustering
-# - Evaluate different parameters
-# - Use metrics to evaluate
-
-## PCA
-# - Compare results
-
 
 class Main:
+    exp_execute = 2
 
-    """
-    # Experiment 1
-    - Read datasets
-    - Split datasets
-    - Call models
+    ############################################
+    # Experiment DBScan 1
+    # Verify distances with and without scale
+    ############################################
 
-    # Experiment 2
-    - Read datasets
-    - Scale datasets
-    - Split datasets
-    - Call models
+    if exp_execute == 1:
 
-    # Experiment 3
-    - Read datasets
-    - Scale datasets
-    - Split datasets
-    - PCA
-    - Call models
-    """
+        for d, scale in zip([0, 0, 1, 1], [False, True, False, True]):
 
-    datasets = read_datasets()
+            datasets = read_datasets()
 
-    datasets = scale_datasets(datasets)
-    datasets = split_data(datasets)
-    
-    # model = DBScan()
-    #
-    # for dataset in datasets:
-    #
-    #     res = model.fit(dataset['train'].to_numpy())
-    #     pred = model.predict(dataset['train'].to_numpy(), res, dataset['test'].to_numpy())
-    #
-    #     plot(dataset['train'], res)
+            if scale:
+                datasets = scale_datasets(datasets)
 
-    # Experiments - KMeans
-    model = KMeans()
+            datasets = split_data(datasets)
 
-    datasets = read_datasets()
-    scaled_datasets = scale_datasets(datasets)
+            dist = 1.0
+            min_neighb = 3
 
-    datasets = split_data(datasets)
-    scaled_datasets = split_data(scaled_datasets)
+            model = DBScan(distance=dist, min_neighbors=min_neighb)
+            dataset = datasets[d]
 
-    for dataset in scaled_datasets:
-        # Experiment 1
-        interval = range(2, 12)
-        random_seed = 84
-        data_train = dataset['train'].to_numpy()
-        data_test = dataset['test'].to_numpy()
-        # plot_elbow(interval, data_train, random_seed=random_seed)
-        # plot_silhouette(data_train, interval, show_clusters=True, random_seed=random_seed)
+            res = model.fit(dataset['train'].to_numpy())
+            res = model.get_description_dist()
+            print(res)
 
-        # Experiment 3 (forgy initialization)
-        clf = KMeans(k=3, init='forgy', random_seed=random_seed)
-        clf.fit(data_train)
-        # plot_quality_measures(clf)
-        # plot_cluster_by_iteration(clf)
-        plot_cluster(np.array(list(clf.centroids.values())), data_test, clf.predict(data_test), 'Clusters (Predict)')
+    ############################################
+    # Experiment DBScan 2
+    # Execute model for Datset 1
+    ############################################
 
-        # Experiment 3 (kmeans++ initialization)
-        clf = KMeans(k=3, init='kmeans++', random_seed=random_seed)
-        clf.fit(data_train)
-        # plot_cluster_by_iteration(clf)
-        # plot_quality_measures(clf)
-        plot_cluster(np.array(list(clf.centroids.values())), data_test, clf.predict(data_test), 'Clusters (Predict)')
-    # for dataset in datasets:
-    #     random_seed = 88
-    #     data_train = dataset['train'].to_numpy()
-    #     data_test = dataset['test'].to_numpy()
+    if exp_execute == 2:
 
-        # Experiment 2 (forgy initialization)
-        # clf = KMeans(k=3, init='forgy', random_seed=random_seed)
-        # clf.fit(data_train)
-        # plot_quality_measures(clf)
-        # plot_cluster_by_iteration(clf)
-        # plot_cluster(np.array(list(clf.centroids.values())), data_test, clf.predict(data_test), 'Clusters (Predict)')
+        datasets = read_datasets()
 
-        # Experiment 2 (kmeans++ initialization)
-        # clf = KMeans(k=3, init='kmeans++', random_seed=random_seed)
-        # clf.fit(data_train)
-        # plot_cluster_by_iteration(clf)
-        # plot_quality_measures(clf)
-        # plot_cluster(np.array(list(clf.centroids.values())), data_test, clf.predict(data_test), 'Clusters (Predict)')
+        datasets = scale_datasets(datasets)
+        datasets = split_data(datasets)
 
-    # datasets = read_datasets()
+        for dist in [0.05, 0.1, 0.15]:
 
-    # for n_components in [range(2, 3, 4)]:
+            df_merge = datasets[0]['train'].copy()
+            df_merge['Type'] = -2
+            df_merge['Cluster'] = -2
+            df_merge['Experiment'] = 'remove'
 
-    #     for i, dataset in enumerate(datasets):
+            for min_neighb in [3, 5, 8]:
+                model = DBScan(distance=dist, min_neighbors=min_neighb)
+                dataset = datasets[0]
 
-    #         dataset = OurPCA().fit_transform(dataset.to_numpy(), n_components)
+                res = model.fit(dataset['train'].to_numpy())
+                pred = model.predict(dataset['train'].to_numpy(), res, dataset['test'].to_numpy())
 
-    #         dataset = scale_datasets([dataset])
-    #         dataset = split_data([dataset])
-            
-    #         model = KMeans()
-    #         res = model.fit(dataset['train'].to_numpy())
-    #         pred = model.predict(dataset['train'].to_numpy(), res, dataset['test'].to_numpy())
+                # plot(dataset['train'].copy(), res, file_name=f'dbscan_vardist_{dist}_{min_neighb}.png')
 
-    #         plot(dataset['train'], res)
+                write_results(datasets, f'dbscan_vardist_{dist}_{min_neighb}_datasets')
+                write_results(res, f'dbscan_vardist_{dist}_{min_neighb}_res')
+                write_results(pred, f'dbscan_vardist_{dist}_{min_neighb}_pred')
+
+                df_merge = pd.concat(
+                    [df_merge, merge_result(dataset['train'].copy(), res, f'Distance: {dist} Neighbor: {min_neighb}')])
+
+            plot_all(df_merge, file_name=f'all_dbscan_{dist}.png')
+
+    ############################################
+    # Experiment DBScan 3
+    # Execute model for Datset 2
+    ############################################
+
+    if exp_execute == 2:
+
+        datasets = read_datasets()
+
+        datasets = scale_datasets(datasets)
+        datasets = split_data(datasets)
+
+        for dist in [0.05, 0.1, 0.15]:
+
+            df_merge = datasets[1]['train'].copy()
+            df_merge['Type'] = -2
+            df_merge['Cluster'] = -2
+            df_merge['Experiment'] = 'remove'
+
+            for min_neighb in [3, 5, 8]:
+                model = DBScan(distance=dist, min_neighbors=min_neighb)
+                dataset = datasets[1]
+
+                res = model.fit(dataset['train'].to_numpy())
+                pred = model.predict(dataset['train'].to_numpy(), res, dataset['test'].to_numpy())
+
+                # plot(dataset['train'].copy(), res, file_name=f'dbscan_vardist_{dist}_{min_neighb}.png')
+
+                write_results(datasets, f'dbscan_vardist_{dist}_{min_neighb}_datasets')
+                write_results(res, f'dbscan_vardist_{dist}_{min_neighb}_res')
+                write_results(pred, f'dbscan_vardist_{dist}_{min_neighb}_pred')
+
+                df_merge = pd.concat(
+                    [df_merge, merge_result(dataset['train'].copy(), res, f'Distance: {dist} Neighbor: {min_neighb}')])
+
+            plot_all(df_merge, file_name=f'all_dbscan_{dist}.png')
