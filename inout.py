@@ -20,7 +20,7 @@ def read_csv(file_name, sep=' '):
 def read_datasets():
     datasets = []
 
-    for file, sep in zip(['cluster.dat', 'credit.csv'], [' ', None]):
+    for file, sep in zip(['cluster.dat'], [' ', None]):
         dataset = read_csv(f'datasets/{file}', sep)
         dataset = dataset.fillna(0)
 
@@ -190,8 +190,13 @@ def plot_metrics(k, metric, title='', xlabel='', ylabel=''):
     plt.show()
 
 
-def plot_elbow(k, inertia):
-    plot_metrics(k, inertia, 'Elbow method', 'Number of clusters (K)', 'Sum of Squared Error')
+def plot_elbow(interval, data, random_seed=None):
+    inertia = []
+    for n_clusters in interval:
+        clf = KMeans(k=n_clusters, init='kmeans++', random_seed=random_seed)
+        clf.fit(data)
+        inertia.append(clf.inertia)
+    plot_metrics(interval, inertia, 'Elbow method', 'Number of clusters (K)', 'Sum of Squared Error')
 
 
 def plot_cluster(centroids, clusters, labels, title='', xlabel='', ylabel='', scaler=None):
