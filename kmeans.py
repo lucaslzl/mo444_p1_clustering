@@ -1,16 +1,14 @@
 import numpy as np
 from scipy.spatial import distance
 
-from model import Model
 
-
-class KMeans(Model):
-    def __init__(self, k=3, max_iter=100, init='forgy', random_seed=None):
-        super().__init__()
+class KMeans:
+    def __init__(self, k=3, max_iter=100, init='kmeans++', random_seed=None):
         self.k = k
         self.max_iter = max_iter
         self.init = init.lower()
         self.random_seed = random_seed
+        self.inertia = None
         self.centroids = {}
         self.clusters = {}
         self.history = {}
@@ -40,8 +38,11 @@ class KMeans(Model):
                 if cluster:
                     self.centroids[label] = np.mean(cluster, axis=0)
 
+            # compute inertia
+            self._compute_inertia()
+
             # save current centroids and clusters to history
-            self.history[i] = {'centroids': dict(self.centroids), 'clusters': dict(self.clusters)}
+            self.history[i] = {'centroids': dict(self.centroids), 'clusters': dict(self.clusters), 'inertia': self.inertia}
 
             # check if the algorithm has converged
             converged = True
@@ -118,3 +119,12 @@ class KMeans(Model):
             distances.append(centroid_distance)
 
         return distances
+
+    def _compute_inertia(self):
+        # compute the inertia (sum of squared distances of samples to their closest centroid)
+        inertia = 0
+        for label, centroid in self.centroids.items():
+            for point in self.clusters[label]:
+                error = distance.euclidean(centroid, point)
+                inertia += error ** 2
+        self.inertia = inertia
