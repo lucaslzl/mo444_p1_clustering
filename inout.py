@@ -19,9 +19,10 @@ def read_csv(file_name, sep=' '):
 
 
 def read_datasets():
+
     datasets = []
 
-    for file, sep in zip(['cluster.dat'], [' ', None]):
+    for file, sep in zip(['cluster.dat', 'credit.csv'], [' ', None]):
         dataset = read_csv(f'datasets/{file}', sep)
         dataset = dataset.fillna(0)
 
@@ -106,6 +107,24 @@ def plot(data, res, file_name):
     sns.relplot(
         data=data,
         x=f"{cols[0]}", y=f"{cols[1]}", hue="Cluster", style='Type',
+        palette=palette 
+    )
+
+    plt.savefig(f'./plots/{file_name}')
+
+
+def plot_pred(data, pred, file_name):
+
+    data['Cluster'] = pred
+
+    cols = list(data.columns)
+
+    sns.set_theme()
+    palette = sns.color_palette("vlag", as_cmap=True)
+
+    sns.relplot(
+        data=data,
+        x=f"{cols[0]}", y=f"{cols[1]}", hue="Cluster",
         palette=palette 
     )
 
