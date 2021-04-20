@@ -54,6 +54,7 @@ class Main:
             df_merge['Experiment'] = 'remove'
 
             for min_neighb in [3, 5, 8]:
+
                 model = DBScan(distance=dist, min_neighbors=min_neighb)
                 dataset = datasets[0]
 

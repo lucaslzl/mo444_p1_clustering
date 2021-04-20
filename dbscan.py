@@ -95,7 +95,7 @@ class DBScan(Model):
         for i in tqdm(range(len(x))):
 
             # If already classified, skip
-            if nc[i] != 0:
+            if nc[i] != 0 or ci[i] != 0:
                 continue
 
             # Get neighbors
