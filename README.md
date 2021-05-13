@@ -5,7 +5,7 @@ Esse trabalho foi feito pelos seguintes membros:
 - Lucas Zanco Ladeira - 188951
 - Rafael Scherer - 204990 
 
-O código original deste projeto está disponível no [repositório do Github](https://github.com/lucaslzl/p1_clustering). 
+O código original deste projeto está disponível no [repositório do Github](https://github.com/lucaslzl/mo444_p1_clustering). 
 
 
 ## Modelos de Agrupamento e Redução de Dimensionalidade
